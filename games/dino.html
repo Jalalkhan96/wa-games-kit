@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Dino Runner</title>
+<style>
+  body{margin:0;background:#111b21;color:#e9edef;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:12px}
+  h1{font-size:20px;margin:6px} canvas{background:#f7f7f7;border:2px solid #25d366;border-radius:8px;touch-action:none;max-width:100%}
+  p{color:#8696a0;font-size:14px}
+</style>
+</head>
+<body>
+<h1>🦖 Dino Runner</h1>
+<canvas id="c" width="660" height="200"></canvas>
+<p>Tap / click / Space to jump — your profile photo rides along when the bot personalises this game.</p>
+<img id="pfp" src="{{PFP}}" style="display:none" alt="">
+<script>
+const cv=document.getElementById('c'),x=cv.getContext('2d'),GY=160;
+const pfp=document.getElementById('pfp');let hasPfp=!!pfp.getAttribute('src');
+let dino,obs,score,speed,alive,frame,raf;
+function reset(){dino={y:GY,v:0};obs=[];score=0;speed=5;alive=true;frame=0;cancelAnimationFrame(raf);loop()}
+function jump(){if(!alive){reset();return}if(dino.y>=GY)dino.v=-11.5}
+function loop(){raf=requestAnimationFrame(loop);frame++;
+  x.clearRect(0,0,660,200);
+  x.strokeStyle='#888';x.beginPath();x.moveTo(0,GY+22);x.lineTo(660,GY+22);x.stroke();
+  if(frame%Math.max(45,90-Math.floor(speed*3))===0&&Math.random()<0.75)obs.push({x:680,w:14+Math.random()*14,h:24+Math.random()*22});
+  x.fillStyle='#2d7a3a';
+  obs.forEach(o=>{o.x-=speed;x.fillRect(o.x,GY+22-o.h,o.w,o.h)});
+  obs=obs.filter(o=>o.x>-30);
+  dino.v+=0.55;dino.y+=dino.v;if(dino.y>GY){dino.y=GY;dino.v=0}
+  if(hasPfp&&pfp.complete&&pfp.naturalWidth){x.save();x.beginPath();x.arc(70,dino.y,18,0,7);x.clip();x.drawImage(pfp,52,dino.y-18,36,36);x.restore();x.strokeStyle='#25d366';x.beginPath();x.arc(70,dino.y,18,0,7);x.stroke()}
+  else{x.fillStyle='#535353';x.fillRect(52,dino.y-22,36,36);x.fillStyle='#f7f7f7';x.fillRect(76,dino.y-16,5,5)}
+  score+=0.12;speed=5+score/300;
+  x.fillStyle='#333';x.font='bold 16px system-ui';x.textAlign='right';x.fillText('Score '+Math.floor(score),650,24);
+  const hit=obs.some(o=>o.x<88&&o.x+o.w>54&&dino.y+18>GY+22-o.h);
+  if(hit){alive=false;x.fillStyle='rgba(0,0,0,.5)';x.fillRect(0,0,660,200);x.fillStyle='#fff';x.font='bold 24px system-ui';x.textAlign='center';x.fillText('Game Over — '+Math.floor(score),330,95);x.font='15px system-ui';x.fillText('Tap to restart',330,122)}}
+document.addEventListener('pointerdown',jump);
+document.addEventListener('keydown',e=>{if(e.code==='Space'||e.code==='ArrowUp'){jump();e.preventDefault()}});
+reset();
+</script>
+</body>
+</html>

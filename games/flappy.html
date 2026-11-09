@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Flappy Bird</title>
+<style>
+  body{margin:0;background:#111b21;color:#e9edef;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:12px}
+  h1{font-size:20px;margin:6px} canvas{background:linear-gradient(#70c5ce,#a8e6ea);border:2px solid #25d366;border-radius:8px;touch-action:none}
+  p{color:#8696a0;font-size:14px}
+</style>
+</head>
+<body>
+<h1>🐤 Flappy Bird</h1>
+<canvas id="c" width="330" height="440"></canvas>
+<p>Tap / click / Space to flap</p>
+<script>
+const cv=document.getElementById('c'),x=cv.getContext('2d');
+let bird,pipes,score,alive,frame,raf;
+function reset(){bird={y:220,v:0};pipes=[];score=0;alive=true;frame=0;cancelAnimationFrame(raf);loop()}
+function flap(){if(!alive){reset();return}bird.v=-7.5}
+function loop(){raf=requestAnimationFrame(loop);frame++;
+  x.fillStyle='#70c5ce';x.fillRect(0,0,330,440);
+  if(frame%95===0)pipes.push({x:330,gap:110+Math.random()*180,passed:false});
+  x.fillStyle='#25a73c';
+  pipes.forEach(p=>{p.x-=2.2;x.fillRect(p.x,0,56,p.gap-70);x.fillRect(p.x,p.gap+70,56,440-p.gap-70);if(!p.passed&&p.x+56<150){p.passed=true;score++}});
+  pipes=pipes.filter(p=>p.x>-60);
+  bird.v+=0.42;bird.y+=bird.v;
+  x.fillStyle='#ffd93b';x.beginPath();x.arc(150,bird.y,14,0,7);x.fill();
+  x.fillStyle='#111';x.beginPath();x.arc(155,bird.y-4,3,0,7);x.fill();
+  x.fillStyle='#ff8c1a';x.fillRect(162,bird.y-2,10,5);
+  x.fillStyle='#fff';x.font='bold 26px system-ui';x.textAlign='center';x.fillText(score,165,42);
+  if(bird.y>440||bird.y<0||pipes.some(p=>150+12>p.x&&150-12<p.x+56&&(bird.y-12<p.gap-70||bird.y+12>p.gap+70))){
+    if(alive){alive=false;x.fillStyle='rgba(0,0,0,.55)';x.fillRect(0,0,330,440);x.fillStyle='#fff';x.font='bold 24px system-ui';x.fillText('Game Over — '+score,165,210);x.font='15px system-ui';x.fillText('Tap to restart',165,240)}return}}
+document.addEventListener('pointerdown',flap);
+document.addEventListener('keydown',e=>{if(e.code==='Space'){flap();e.preventDefault()}});
+reset();
+</script>
+</body>
+</html>
